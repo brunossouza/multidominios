@@ -1,0 +1,49 @@
+/* You can add global styles to this file, and also import other style files */
+
+// Reset básico
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Estilos globais para o body
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: all 0.3s ease;
+}
+
+// Estilos para scrollbar personalizada
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary-bg-color, #f1f1f1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color, #888);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary-color, #555);
+}
+
+// Seleção de texto personalizada
+::selection {
+  background-color: var(--accent-color, #007bff);
+  color: var(--primary-bg-color, #ffffff);
+}
+
+::-moz-selection {
+  background-color: var(--accent-color, #007bff);
+  color: var(--primary-bg-color, #ffffff);
+}

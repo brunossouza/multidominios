@@ -1,0 +1,11 @@
+<main class="main" [ngClass]="theme">
+  <h1>{{ companyName }}</h1>
+
+  <div class="info-grid">
+    <p><strong>Database:</strong> {{ dbName }}</p>
+    <p><strong>API URL:</strong> {{ apiUrl }}</p>
+    <p><strong>Tema Ativo:</strong> {{ theme }}</p>
+  </div>
+</main>
+
+<router-outlet />
