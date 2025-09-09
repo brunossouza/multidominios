@@ -79,6 +79,33 @@ Boas práticas e notas
 - Configure CORS e políticas de segurança apropriadas no backend antes de expor o serviço.
 - Este projeto pretende ser fácil de entender; para casos reais considere cache, autenticação, validação e monitoramento.
 
+Executando com Docker Compose
+----------------------------
+Arquivos relacionados ao Docker neste repositório:
+
+- `backend/Dockerfile` - build multi-stage da API NestJS.
+- `frontend/Dockerfile` - build do Angular e servidor nginx.
+- `compose.yml` - orquestra os serviços frontend e backend.
+
+Como executar com Docker Compose:
+
+1. Construir e iniciar contêineres:
+
+```bash
+docker compose up --build
+```
+
+2. Acesse:
+
+- Frontend: http://web.tenant1.com:4200
+- Frontend: http://web.tenant2.com:4200
+- Backend: http://localhost:3000
+
+Notas sobre os containers:
+
+- Os Dockerfiles usam Node 22 (alpine). Ajuste se necessário.
+- O `frontend` é servido por nginx na porta 80 do container e mapeado para 4200 local.
+
 Estrutura do repositório
 ------------------------
 ```
@@ -91,5 +118,3 @@ Contribuindo
 ------------
 Pull requests e sugestões são bem-vindos. Para mudanças locais, siga o fluxo comum: crie uma branch e abra um PR descrevendo a motivação.
 
----
-README criado para documentar o propósito e uso do projeto multi-tenant (frontend + backend).
