@@ -34,7 +34,7 @@ export const appConfig: ApplicationConfig = {
         httpClient
           .get(`http://localhost:3000/config`, {
             headers: {
-              'x-tenant': domain,
+              'X-Tenant': domain,
             },
           })
           .pipe(

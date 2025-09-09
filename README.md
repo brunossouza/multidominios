@@ -4,8 +4,8 @@ Visão geral
 ------------
 Este repositório contém um exemplo mínimo de aplicação multi-tenant composto por duas partes:
 
-- `backend/` — serviço em NestJS que expõe um endpoint para recuperar a configuração de um tenant (com base no host recebido via header `x-tenant`).
-- `frontend/` — aplicação Angular que, no bootstrap, solicita a configuração ao backend enviando o hostname atual no header `x-tenant` e inicializa a aplicação conforme a configuração do tenant.
+- `backend/` — serviço em NestJS que expõe um endpoint para recuperar a configuração de um tenant (com base no host recebido via header `X-Tenant`).
+- `frontend/` — aplicação Angular que, no bootstrap, solicita a configuração ao backend enviando o hostname atual no header `X-Tenant` e inicializa a aplicação conforme a configuração do tenant.
 
 Objetivo
 --------
@@ -22,7 +22,7 @@ Use este repositório para aprendizado, experimentos locais ou como ponto de par
 Arquitetura e fluxo
 -------------------
 1. O usuário abre a aplicação frontend em um domínio que representa um tenant (ex: `web.tenant1.com`).
-2. O frontend lê `window.location.hostname` e faz uma requisição GET para `http://localhost:3000/config` com o header `x-tenant: <hostname>`.
+2. O frontend lê `window.location.hostname` e faz uma requisição GET para `http://localhost:3000/config` com o header `X-Tenant: <hostname>`.
 3. O backend (NestJS) recebe o header, procura a configuração do tenant e retorna um JSON com os dados de configuração ou `null` se o tenant não for encontrado.
 4. O frontend inicializa usando a configuração recebida (companyName, dbName, apiUrl, theme, etc.).
 
@@ -59,17 +59,17 @@ O frontend é servido em `http://0.0.0.0:4200` (conforme configuração do proje
 
 Testando o fluxo com curl
 ------------------------
-Simule uma chamada ao backend enviando o header `x-tenant`:
+Simule uma chamada ao backend enviando o header `X-Tenant`:
 
 ```bash
-curl -v -H "x-tenant: web.tenant1.com" http://localhost:3000/config
+curl -v -H "X-Tenant: web.tenant1.com" http://localhost:3000/config
 ```
 
 Arquivos importantes
 --------------------
 - `backend/src/tenant-config/tenant-config.service.ts` — onde estão as configurações de exemplo dos tenants.
 - `backend/src/tenant-config/tenant-config.controller.ts` — controller que expõe o endpoint `GET /config`.
-- `backend/src/tenant-middleware/tenant-middleware.middleware.ts` — middleware de exemplo que pode validar/tratar `x-tenant`.
+- `backend/src/tenant-middleware/tenant-middleware.middleware.ts` — middleware de exemplo que pode validar/tratar `X-Tenant`.
 - `frontend/src/app/app.config.ts` — rotina de bootstrap que busca a configuração do tenant.
 - `frontend/src/app/services/config.service.ts` — serviço que armazena e fornece a configuração para o app.
 

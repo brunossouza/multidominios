@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: multidominios_backend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: multidominios_frontend
+    restart: unless-stopped
+    ports:
+      - '4200:80'
+    depends_on:
+      - backend
