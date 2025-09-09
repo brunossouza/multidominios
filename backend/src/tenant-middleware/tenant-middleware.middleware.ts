@@ -7,15 +7,13 @@ export class TenantMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     this.logger.debug('TenantMiddleware called');
-    const host = req.headers['host']; // Ex: 'tenant1.example.com'
+    const domain = req.headers['x-tenant']; // Ex: 'tenant1.example.com'
 
-    if (typeof host !== 'string') {
+    if (typeof domain !== 'string') {
       this.logger.warn('Host header is missing or not a string');
       next();
       return;
     }
-
-    const domain = host.split(':')[0]; // Extract 'tenant1' from 'tenant1.example.com'
 
     this.logger.debug(`Extracted domain: ${domain}`);
     if (domain) {

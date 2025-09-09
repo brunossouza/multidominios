@@ -1,7 +1,7 @@
 import { NgClass } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ConfigService } from './config.service';
+import { ConfigService } from './services/config.service';
 
 @Component({
   selector: 'app-root',

@@ -10,7 +10,7 @@ import { provideRouter } from '@angular/router';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { firstValueFrom, tap } from 'rxjs';
 import { routes } from './app.routes';
-import { AppConfig, ConfigService } from './config.service';
+import { AppConfig, ConfigService } from './services/config.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,17 +20,29 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideAppInitializer(() => {
       const httpClient = inject(HttpClient);
-      const domain = window.location.hostname;
       const configService = inject(ConfigService);
-      console.log('Current domain:', domain);
+
+      let domain = window.location.hostname;
+      if (domain.startsWith('http://') || domain.startsWith('https://')) {
+        domain = domain.split('//')[1];
+      }
+
+      console.log('Fetching config for domain:', domain);
+
       // You can modify the URL based on the domain if needed
       return firstValueFrom(
-        httpClient.get(`http://${domain}:3000/config`).pipe(
-          tap((confg) => {
-            console.log('Config loaded:', confg);
-            configService.setConfig(confg as AppConfig);
+        httpClient
+          .get(`http://localhost:3000/config`, {
+            headers: {
+              'x-tenant': domain,
+            },
           })
-        )
+          .pipe(
+            tap((confg) => {
+              console.log('Config loaded:', confg);
+              configService.setConfig(confg as AppConfig);
+            })
+          )
       );
     }),
   ],

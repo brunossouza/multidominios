@@ -1,59 +1,68 @@
-# Frontend
+# Frontend (App de teste multi-tenant)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.1.
+Aplicação frontend mínima em Angular que carrega sua configuração (companyName, dbName, apiUrl, theme) no bootstrap com base no domínio do navegador.
 
-## Development server
+Esta aplicação foi gerada com Angular CLI 20.2.1.
 
-To start a local development server, run:
+## Como o carregamento de configuração funciona
 
-```bash
-ng serve
-```
+No bootstrap (arquivo `src/app/app.config.ts`) o app obtém `window.location.hostname` e faz uma requisição GET para o backend em `http://localhost:3000/config`, enviando o hostname no header `x-tenant`.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+O backend responde com um JSON contendo a configuração do tenant, que é então armazenada em `ConfigService` e usada pelos componentes.
 
-## Code scaffolding
+Resumo do fluxo:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. Browser abre a app (ex: `http://tenant1.com:4200`)
+2. App coleta `window.location.hostname` (ex: `tenant1.com`)
+3. Faz GET `http://localhost:3000/config` com header `x-tenant: tenant1.com`
+4. Backend retorna a configuração específica do tenant
+5. App inicializa usando a configuração retornada
 
-```bash
-ng generate component component-name
-```
+## Instalação e execução
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Instale dependências e inicie a aplicação:
 
 ```bash
-ng build
+# no diretório frontend
+yarn install
+
+# iniciar em 0.0.0.0:4200 (exposto para redes locais)
+yarn start:dev
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+O script `start` foi configurado para rodar em `--host 0.0.0.0 --port 4200` e permitir hosts comuns usados nos exemplos.
 
-## Running unit tests
+## Testando o fluxo localmente
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+1. Inicie o backend (veja `backend/README.md`) — por padrão em `http://localhost:3000`.
+2. Inicie o frontend: `yarn start:dev`.
+
+3. Abra o navegador apontando para um hostname que represente o tenant. Exemplos locais:
+
+- Use `/etc/hosts` para mapear domínios de teste para `127.0.0.1`:
+
+	127.0.0.1 web.tenant1.com
+	127.0.0.1 web.tenant2.com
+
+- Acesse `http://web.tenant1.com:4200` e o frontend enviará `x-tenant: web.tenant1.com` para o backend.
+
+Exemplo de verificação com curl (simulando o header):
 
 ```bash
-ng test
+curl -H "x-tenant: web.tenant1.com" http://localhost:3000/config
 ```
 
-## Running end-to-end tests
+## Scripts úteis
 
-For end-to-end (e2e) testing, run:
+- `yarn start` — inicia o dev server (4200)
 
-```bash
-ng e2e
-```
+## Observações e limitações
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- O backend neste repositório usa configurações hardcoded para demonstração. Em produção, use um armazenamento seguro (DB ou serviço de configuração).
+- O CORS no backend está configurado para permitir todos os origens para facilitar testes locais.
 
-## Additional Resources
+## Recursos
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Arquivo de inicialização que carrega configuração: `src/app/app.config.ts`
+- Serviço que armazena a configuração: `src/app/services/config.service.ts`
+
