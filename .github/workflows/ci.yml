@@ -10,13 +10,20 @@ jobs:
         node-version: [22.x] # Specify Node.js 22
     steps:
       - uses: actions/checkout@v4
-      - name: Using Node.js ${{ matrix.node-version }}
+      - name: Install Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: yarn
           cache-dependency-path: ${{ matrix.project }}/yarn.lock
-      - run: yarn install
+      - name: Install dependencies
+        run: yarn install
         working-directory: ./${{ matrix.project }}
-      - run: yarn test
+      - name: Execute tests
+        run: |
+          if [ "${{ matrix.project }}" = "frontend" ]; then
+            yarn test:ci
+          else
+            yarn test
+          fi
         working-directory: ./${{ matrix.project }}
