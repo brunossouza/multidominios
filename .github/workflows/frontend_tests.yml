@@ -27,4 +27,4 @@ jobs:
       run: yarn install # or 'npm install' if you use npm
     - name: Run tests (headless)
       working-directory: ./frontend
-      run: yarn test --watch=false --browsers=ChromeHeadless --single-run
+      run: yarn test --watch=false --browsers=ChromeHeadless
