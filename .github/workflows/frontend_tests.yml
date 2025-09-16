@@ -1,0 +1,30 @@
+name: Frontend Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x] # Specify Node.js 22
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: yarn install # or 'npm install' if you use npm
+    - name: Run tests
+      working-directory: ./frontend
+      run: yarn test # or 'npm test' if you use npm
