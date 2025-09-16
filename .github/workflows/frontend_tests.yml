@@ -10,6 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    timeout-minutes: 4
+
     strategy:
       matrix:
         node-version: [22.x] # Specify Node.js 22
@@ -27,4 +29,4 @@ jobs:
       run: yarn install # or 'npm install' if you use npm
     - name: Run tests (headless)
       working-directory: ./frontend
-      run: yarn test --watch=false --browsers=ChromeHeadless
+      run: timeout 2m yarn test:ci
