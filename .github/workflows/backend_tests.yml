@@ -19,9 +19,9 @@ jobs:
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        working-directory: ./backend
         node-version: ${{ matrix.node-version }}
-        cache: 'npm' # Or 'yarn' or 'pnpm' if you use them
+        cache: 'yarn'
+        cache-dependency-path: backend/yarn.lock
     - name: Install dependencies
       working-directory: ./backend
       run: yarn install # or 'npm install' if you use npm
