@@ -1,0 +1,29 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x] # Specify Node.js 22
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm' # Or 'yarn' or 'pnpm' if you use them
+    - name: Install dependencies
+      working-directory: ./backend
+      run: yarn install # or 'npm install' if you use npm
+    - name: Run tests
+      working-directory: ./backend
+      run: yarn test # or 'npm test' if you use npm
