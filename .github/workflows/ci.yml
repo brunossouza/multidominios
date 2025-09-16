@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 2
     strategy:
       matrix:
         project: [backend, frontend]
@@ -22,8 +22,8 @@ jobs:
       - name: Execute tests
         run: |
           if [ "${{ matrix.project }}" = "frontend" ]; then
-            yarn test:ci
+            timeout 1m yarn test:ci
           else
-            yarn test
+            timeout 1m yarn test
           fi
         working-directory: ./${{ matrix.project }}
