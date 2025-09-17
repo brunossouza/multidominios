@@ -8,21 +8,29 @@ export class TenantMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     this.logger.debug('TenantMiddleware called');
 
-    // Apesar de HTTP headers serem case-insensitive, alguns ambientes podem alterar o casing dos headers.
-    // Esse parece ser o caso aqui com o NestJS.
-    const domain = req.headers['x-tenant']; // Ex: 'web.tenant1.com'
+    // Print all headers for debugging
+    this.logger.debug(`Request Headers: ${JSON.stringify(req.headers)}`);
 
-    if (typeof domain !== 'string') {
-      this.logger.warn('X-Tenant header is missing or not a string');
+    // Extrai o domínio do header Origin que é enviado automaticamente pelo navegador
+    const originHeader = req.headers['origin']; // Ex: 'https://web.tenant1.com'
+
+    if (typeof originHeader !== 'string') {
+      this.logger.warn('Origin header is missing or not a string');
       //TODO: Aplique a lógica padrão ou retorne um erro, conforme necessário.
-      next();
+      res.status(400).send('Origin header is required');
       return;
     }
 
-    this.logger.debug(`Extracted domain: ${domain}`);
-    if (domain) {
-      this.logger.debug(`Setting X-Tenant header to: ${domain}`);
-      req.headers['x-tenant'] = domain;
+    // Extrai apenas o hostname do URL completo do origin
+    let domain: string;
+    try {
+      const url = new URL(originHeader);
+      domain = url.hostname; // Ex: 'web.tenant1.com'
+      this.logger.debug(`Extracted domain from Origin: ${domain}`);
+    } catch (error) {
+      this.logger.error(`Invalid Origin header format: ${originHeader}`, error);
+      res.status(400).send('Invalid Origin header format');
+      return;
     }
 
     next();

@@ -4,15 +4,15 @@ Visão geral
 ------------
 Este repositório contém um exemplo mínimo de aplicação multi-tenant composto por duas partes:
 
-- `backend/` — serviço em NestJS que expõe um endpoint para recuperar a configuração de um tenant (com base no host recebido via header `X-Tenant`).
-- `frontend/` — aplicação Angular que, no bootstrap, solicita a configuração ao backend enviando o hostname atual no header `X-Tenant` e inicializa a aplicação conforme a configuração do tenant.
+- `backend/` — serviço em NestJS que expõe um endpoint para recuperar a configuração de um tenant (com base no domínio extraído automaticamente do header `Origin`).
+- `frontend/` — aplicação Angular que, no bootstrap, solicita a configuração ao backend (o header `Origin` é enviado automaticamente pelo navegador) e inicializa a aplicação conforme a configuração do tenant.
 
 Objetivo
 --------
 O objetivo é demonstrar, de forma simples e didática, como uma aplicação pode carregar configurações por domínio (multi-tenant). O exemplo mostra:
 
-- como o frontend determina o tenant a partir de `window.location.hostname`;
-- como o frontend solicita a configuração do tenant ao backend usando um header HTTP;
+- como o frontend determina o tenant automaticamente através do domínio da URL;
+- como o backend extrai o domínio do header `Origin` enviado automaticamente pelo navegador;
 - como o backend identifica e devolve a configuração apropriada (ou `null` se não existir).
 
 Quando usar este repositório
@@ -22,7 +22,7 @@ Use este repositório para aprendizado, experimentos locais ou como ponto de par
 Arquitetura e fluxo
 -------------------
 1. O usuário abre a aplicação frontend em um domínio que representa um tenant (ex: `web.tenant1.com`).
-2. O frontend lê `window.location.hostname` e faz uma requisição GET para `http://localhost:3000/config` com o header `X-Tenant: <hostname>`.
+2. O frontend lê `window.location.hostname` e faz uma requisição GET para `http://localhost:3000/config` (o header `Origin` é enviado automaticamente pelo navegador).
 3. O backend (NestJS) recebe o header, procura a configuração do tenant e retorna um JSON com os dados de configuração ou `null` se o tenant não for encontrado.
 4. O frontend inicializa usando a configuração recebida (companyName, dbName, apiUrl, theme, etc.).
 
@@ -59,17 +59,17 @@ O frontend é servido em `http://0.0.0.0:4200` (conforme configuração do proje
 
 Testando o fluxo com curl
 ------------------------
-Simule uma chamada ao backend enviando o header `X-Tenant`:
+Simule uma chamada ao backend enviando o header `Origin`:
 
 ```bash
-curl -v -H "X-Tenant: web.tenant1.com" http://localhost:3000/config
+curl -v -H "Origin: https://web.tenant1.com" http://localhost:3000/config
 ```
 
 Arquivos importantes
 --------------------
 - `backend/src/tenant-config/tenant-config.service.ts` — onde estão as configurações de exemplo dos tenants.
 - `backend/src/tenant-config/tenant-config.controller.ts` — controller que expõe o endpoint `GET /config`.
-- `backend/src/tenant-middleware/tenant-middleware.middleware.ts` — middleware de exemplo que pode validar/tratar `X-Tenant`.
+- `backend/src/tenant-middleware/tenant-middleware.middleware.ts` — middleware de exemplo que extrai o domínio do header `Origin`.
 - `frontend/src/app/app.config.ts` — rotina de bootstrap que busca a configuração do tenant.
 - `frontend/src/app/services/config.service.ts` — serviço que armazena e fornece a configuração para o app.
 

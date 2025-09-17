@@ -8,7 +8,7 @@ async function bootstrap() {
     origin: '*', // Allow all origins
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders:
-      'Content-Type, Accept, X-Requested-With, X-HTTP-Method-Override, Authorization, X-Tenant',
+      'Content-Type, Accept, X-Requested-With, X-HTTP-Method-Override, Authorization',
   });
 
   await app.listen(process.env.PORT ?? 3000);

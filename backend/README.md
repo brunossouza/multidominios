@@ -2,12 +2,12 @@
 
 Visão geral
 ------------
-Pequeno serviço em NestJS usado em exemplos de teste para demonstrar recuperação de configurações por domínio (multi-tenant). O frontend solicita `/config` e envia o hostname no header `X-Tenant`; o backend responde com a configuração correspondente ao tenant.
+Pequeno serviço em NestJS usado em exemplos de teste para demonstrar recuperação de configurações por domínio (multi-tenant). O frontend solicita `/config` e o backend extrai automaticamente o domínio do header `Origin` para responder com a configuração correspondente ao tenant.
 
 Funcionalidade principal
 ------------------------
 - Endpoint: `GET /config`
-- Header esperado: `X-Tenant: <hostname>` (ex: `web.tenant1.com`)
+- Header usado: `Origin` (enviado automaticamente pelo navegador, ex: `https://web.tenant1.com`)
 - Resposta: objeto JSON com a configuração do tenant ou `null` quando o tenant não existe
 
 Tenants de exemplo
@@ -41,14 +41,14 @@ yarn start:dev
 
 Endpoint usado pelo frontend
 ---------------------------
-O frontend faz uma requisição GET para `http://localhost:3000/config` e envia o hostname no header `X-Tenant`. O backend retorna a configuração correspondente.
+O frontend faz uma requisição GET para `http://localhost:3000/config` e o header `Origin` é enviado automaticamente pelo navegador. O backend extrai o domínio do `Origin` e retorna a configuração correspondente.
 
 Exemplo (curl)
 --------------
-Simula uma requisição com o header `X-Tenant`:
+Simula uma requisição com o header `Origin`:
 
 ```bash
-curl -v -H "X-Tenant: web.tenant1.com" http://localhost:3000/config
+curl -v -H "Origin: https://web.tenant1.com" http://localhost:3000/config
 ```
 
 Observações de segurança e produção
@@ -61,6 +61,6 @@ Arquivos importantes
 - `src/main.ts` — bootstrap do NestJS e configuração de CORS
 - `src/tenant-config/tenant-config.service.ts` — onde estão as configurações de exemplo
 - `src/tenant-config/tenant-config.controller.ts` — controller que expõe `GET /config`
-- `src/tenant-middleware/tenant-middleware.middleware.ts` — middleware exemplo que trata/valida o `X-Tenant`
+- `src/tenant-middleware/tenant-middleware.middleware.ts` — middleware exemplo que extrai o domínio do header `Origin`
 - `src/tenant-middleware/tenant-middleware.middleware.spec.ts` — testes do middleware
 

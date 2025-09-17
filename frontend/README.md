@@ -6,7 +6,7 @@ Esta aplicação foi gerada com Angular CLI 20.2.1.
 
 ## Como o carregamento de configuração funciona
 
-No bootstrap (arquivo `src/app/app.config.ts`) o app obtém `window.location.hostname` e faz uma requisição GET para o backend em `http://localhost:3000/config`, enviando o hostname no header `X-Tenant`.
+No bootstrap (arquivo `src/app/app.config.ts`) o app obtém `window.location.hostname` e faz uma requisição GET para o backend em `http://localhost:3000/config`. O header `Origin` é enviado automaticamente pelo navegador.
 
 O backend responde com um JSON contendo a configuração do tenant, que é então armazenada em `ConfigService` e usada pelos componentes.
 
@@ -14,8 +14,8 @@ Resumo do fluxo:
 
 1. Browser abre a app (ex: `http://tenant1.com:4200`)
 2. App coleta `window.location.hostname` (ex: `tenant1.com`)
-3. Faz GET `http://localhost:3000/config` com header `X-Tenant: tenant1.com`
-4. Backend retorna a configuração específica do tenant
+3. Faz GET `http://localhost:3000/config` (header `Origin` enviado automaticamente)
+4. Backend extrai o domínio do `Origin` e retorna a configuração específica do tenant
 5. App inicializa usando a configuração retornada
 
 ## Instalação e execução
@@ -44,12 +44,12 @@ O script `start` foi configurado para rodar em `--host 0.0.0.0 --port 4200` e pe
 	127.0.0.1 web.tenant1.com
 	127.0.0.1 web.tenant2.com
 
-- Acesse `http://web.tenant1.com:4200` e o frontend enviará `X-Tenant: web.tenant1.com` para o backend.
+- Acesse `http://web.tenant1.com:4200` e o frontend enviará automaticamente o header `Origin: http://web.tenant1.com:4200` para o backend.
 
 Exemplo de verificação com curl (simulando o header):
 
 ```bash
-curl -H "X-Tenant: web.tenant1.com" http://localhost:3000/config
+curl -H "Origin: https://web.tenant1.com" http://localhost:3000/config
 ```
 
 ## Scripts úteis

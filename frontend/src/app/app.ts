@@ -17,10 +17,17 @@ export class App {
 
   constructor(private configService: ConfigService) {
     const config = this.configService.getConfig();
-    this.companyName = config.companyName;
-    this.dbName = config.dbName;
-    this.apiUrl = config.apiUrl;
-    this.theme = config.theme;
-    console.log('App initialized with config:', config);
+    if (config) {
+      this.companyName = config.companyName;
+      this.dbName = config.dbName;
+      this.apiUrl = config.apiUrl;
+      this.theme = config.theme;
+      console.log('App initialized with config:', config);
+    } else {
+      this.companyName = 'Configuração padrão - Nenhum tenant identificado';
+      this.dbName = 'default_db';
+      this.apiUrl = 'http://localhost:3000/api';
+      this.theme = 'light';
+    }
   }
 }

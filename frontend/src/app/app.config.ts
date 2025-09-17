@@ -8,7 +8,7 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { HttpClient, provideHttpClient } from '@angular/common/http';
-import { firstValueFrom, tap } from 'rxjs';
+import { catchError, firstValueFrom, tap } from 'rxjs';
 import { routes } from './app.routes';
 import { AppConfig, ConfigService } from './services/config.service';
 
@@ -29,19 +29,24 @@ export const appConfig: ApplicationConfig = {
 
       console.log('Fetching config for domain:', domain);
 
-      // You can modify the URL based on the domain if needed
+      // O header Origin será enviado automaticamente pelo navegador
+      // O backend extrairá o domínio a partir do Origin
       return firstValueFrom(
         httpClient
-          .get(`http://localhost:3000/config`, {
-            headers: {
-              'X-Tenant': domain,
-            },
-          })
+          .get(`http://localhost:3000/config`)
           .pipe(
             tap((confg) => {
-              console.log('Config loaded:', confg);
-              configService.setConfig(confg as AppConfig);
-            })
+              if (confg) {
+                console.log('Config loaded:', confg);
+                configService.setConfig(confg as AppConfig);
+              } else {
+                console.error('No config received from backend');
+              }
+            }),
+            catchError((error) => {
+              console.error('Error loading config:', error);
+              throw error;
+            }),
           )
       );
     }),

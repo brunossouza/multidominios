@@ -41,7 +41,7 @@ describe('TenantConfigController', () => {
       };
       const mockRequest = {
         headers: {
-          'x-tenant': 'web.tenant1.com',
+          'origin': 'https://web.tenant1.com',
         },
       } as unknown as Request;
 
@@ -56,36 +56,24 @@ describe('TenantConfigController', () => {
       expect(result).toEqual(mockConfig);
     });
 
-    it('should handle request when x-tenant header is missing', () => {
+    it('should handle request when origin header is missing', () => {
       const mockRequest = {
         headers: {},
       } as unknown as Request;
 
-      mockTenantConfigService.getConfig.mockReturnValue(null);
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const result = controller.getConfig(mockRequest);
-
-      expect(mockTenantConfigService.getConfig).toHaveBeenCalledWith(undefined);
-      expect(result).toBeNull();
+      // Quando origin não existe, new URL() vai lançar TypeError
+      expect(() => controller.getConfig(mockRequest)).toThrow('Invalid URL');
     });
 
-    it('should handle request with invalid tenant', () => {
+    it('should handle request with invalid origin format', () => {
       const mockRequest = {
         headers: {
-          'x-tenant': 'invalid-tenant',
+          'origin': 'invalid-url',
         },
       } as unknown as Request;
 
-      mockTenantConfigService.getConfig.mockReturnValue(null);
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const result = controller.getConfig(mockRequest);
-
-      expect(mockTenantConfigService.getConfig).toHaveBeenCalledWith(
-        'invalid-tenant',
-      );
-      expect(result).toBeNull();
+      // Quando origin é inválido, new URL() vai lançar TypeError
+      expect(() => controller.getConfig(mockRequest)).toThrow('Invalid URL');
     });
   });
 });

@@ -14,12 +14,16 @@ describe('TenantMiddleware', () => {
     mockRequest = {
       headers: {},
     };
-    mockResponse = {};
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
     mockNext = jest.fn();
 
     // Mock do Logger
     loggerSpy = jest.spyOn(Logger.prototype, 'debug').mockImplementation();
     jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    jest.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
   afterEach(() => {
@@ -31,9 +35,9 @@ describe('TenantMiddleware', () => {
   });
 
   describe('use', () => {
-    it('should call next() when x-tenant header is present and valid', () => {
+    it('should call next() when origin header is present and valid', () => {
       mockRequest.headers = {
-        'x-tenant': 'web.tenant1.com',
+        'origin': 'https://web.tenant1.com',
       };
 
       middleware.use(
@@ -43,12 +47,12 @@ describe('TenantMiddleware', () => {
       );
 
       expect(mockNext).toHaveBeenCalledTimes(1);
-      expect(mockRequest.headers['x-tenant']).toBe('web.tenant1.com');
+      // Como o middleware atual não define x-tenant, não testamos isso
     });
 
     it('should log debug messages when processing valid tenant', () => {
       mockRequest.headers = {
-        'x-tenant': 'web.tenant2.com',
+        'origin': 'https://web.tenant2.com',
       };
 
       middleware.use(
@@ -59,14 +63,12 @@ describe('TenantMiddleware', () => {
 
       expect(loggerSpy).toHaveBeenCalledWith('TenantMiddleware called');
       expect(loggerSpy).toHaveBeenCalledWith(
-        'Extracted domain: web.tenant2.com',
+        'Extracted domain from Origin: web.tenant2.com',
       );
-      expect(loggerSpy).toHaveBeenCalledWith(
-        'Setting X-Tenant header to: web.tenant2.com',
-      );
+      // Como o middleware atual não logga "Setting tenant header", removemos essa expectativa
     });
 
-    it('should handle missing x-tenant header', () => {
+    it('should handle missing origin header', () => {
       const warnSpy = jest.spyOn(Logger.prototype, 'warn');
       mockRequest.headers = {};
 
@@ -77,15 +79,17 @@ describe('TenantMiddleware', () => {
       );
 
       expect(warnSpy).toHaveBeenCalledWith(
-        'X-Tenant header is missing or not a string',
+        'Origin header is missing or not a string',
       );
-      expect(mockNext).toHaveBeenCalledTimes(1);
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.send).toHaveBeenCalledWith('Origin header is required');
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it('should handle x-tenant header with non-string value', () => {
+    it('should handle origin header with non-string value', () => {
       const warnSpy = jest.spyOn(Logger.prototype, 'warn');
       mockRequest.headers = {
-        'x-tenant': 123 as unknown as string,
+        'origin': 123 as unknown as string,
       };
 
       middleware.use(
@@ -95,15 +99,17 @@ describe('TenantMiddleware', () => {
       );
 
       expect(warnSpy).toHaveBeenCalledWith(
-        'X-Tenant header is missing or not a string',
+        'Origin header is missing or not a string',
       );
-      expect(mockNext).toHaveBeenCalledTimes(1);
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.send).toHaveBeenCalledWith('Origin header is required');
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it('should handle x-tenant header with array value', () => {
+    it('should handle origin header with array value', () => {
       const warnSpy = jest.spyOn(Logger.prototype, 'warn');
       mockRequest.headers = {
-        'x-tenant': ['web.tenant1.com', 'web.tenant2.com'] as unknown as string,
+        'origin': ['https://web.tenant1.com', 'https://web.tenant2.com'] as unknown as string,
       };
 
       middleware.use(
@@ -113,14 +119,17 @@ describe('TenantMiddleware', () => {
       );
 
       expect(warnSpy).toHaveBeenCalledWith(
-        'X-Tenant header is missing or not a string',
+        'Origin header is missing or not a string',
       );
-      expect(mockNext).toHaveBeenCalledTimes(1);
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.send).toHaveBeenCalledWith('Origin header is required');
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it('should handle empty string x-tenant header', () => {
+    it('should handle invalid origin URL format', () => {
+      const errorSpy = jest.spyOn(Logger.prototype, 'error');
       mockRequest.headers = {
-        'x-tenant': '',
+        'origin': 'invalid-url',
       };
 
       middleware.use(
@@ -129,18 +138,45 @@ describe('TenantMiddleware', () => {
         mockNext,
       );
 
-      expect(loggerSpy).toHaveBeenCalledWith('TenantMiddleware called');
-      expect(loggerSpy).toHaveBeenCalledWith('Extracted domain: ');
-      expect(mockNext).toHaveBeenCalledTimes(1);
-      // Com string vazia, não deve logar "Setting X-Tenant header"
-      expect(loggerSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining('Setting X-Tenant header'),
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Invalid Origin header format: invalid-url',
+        expect.objectContaining({
+          name: 'TypeError',
+          message: expect.stringContaining('Invalid URL'),
+        }),
       );
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.send).toHaveBeenCalledWith('Invalid Origin header format');
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it('should preserve other headers while processing x-tenant', () => {
+    it('should handle origin without protocol', () => {
+      const errorSpy = jest.spyOn(Logger.prototype, 'error');
       mockRequest.headers = {
-        'x-tenant': 'web.tenant1.com',
+        'origin': 'web.tenant1.com',
+      };
+
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Invalid Origin header format: web.tenant1.com',
+        expect.objectContaining({
+          name: 'TypeError',
+          message: expect.stringContaining('Invalid URL'),
+        }),
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.send).toHaveBeenCalledWith('Invalid Origin header format');
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it('should preserve other headers while processing origin', () => {
+      mockRequest.headers = {
+        'origin': 'https://web.tenant1.com',
         authorization: 'Bearer token123',
         'content-type': 'application/json',
       };
@@ -151,7 +187,7 @@ describe('TenantMiddleware', () => {
         mockNext,
       );
 
-      expect(mockRequest.headers['x-tenant']).toBe('web.tenant1.com');
+      // Como o middleware atual não define x-tenant, removemos essa expectativa
       expect(mockRequest.headers.authorization).toBe('Bearer token123');
       expect(mockRequest.headers['content-type']).toBe('application/json');
       expect(mockNext).toHaveBeenCalledTimes(1);

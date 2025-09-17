@@ -7,9 +7,9 @@ export class TenantConfigController {
 
   @Get()
   getConfig(@Req() req: Request): any {
-    // Apesar de HTTP headers serem case-insensitive, alguns ambientes podem alterar o casing dos headers.
-    // Esse parece ser o caso aqui com o NestJS.
-    const tenant = req.headers['x-tenant'] as string;
-    return this.tenantConfigService.getConfig(tenant);
+    // O middleware TenantMiddleware verifica e extrai o domínio do header Origin
+    // para manter compatibilidade interna do sistema
+    const domain = new URL(req.headers['origin'] as string).hostname;
+    return this.tenantConfigService.getConfig(domain);
   }
 }
